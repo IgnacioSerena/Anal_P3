@@ -19,10 +19,10 @@
  *
  *  Description: Receives the number of keys to generate in the n_keys
  *               parameter. The generated keys go from 1 to max. The
- * 				 keys are returned in the keys parameter which must be 
+ * 				 keys are returned in the keys parameter which must be
  *				 allocated externally to the function.
  */
-  
+
 /**
  *  Function: uniform_key_generator
  *               This function generates all keys from 1 to max in a sequential
@@ -32,7 +32,8 @@ void uniform_key_generator(int *keys, int n_keys, int max)
 {
   int i;
 
-  for(i = 0; i < n_keys; i++) keys[i] = 1 + (i % max);
+  for (i = 0; i < n_keys; i++)
+    keys[i] = 1 + (i % max);
 
   return;
 }
@@ -40,7 +41,7 @@ void uniform_key_generator(int *keys, int n_keys, int max)
 /**
  *  Function: potential_key_generator
  *               This function generates keys following an approximately
- *               potential distribution. The smaller values are much more 
+ *               potential distribution. The smaller values are much more
  *               likely than the bigger ones. Value 1 has a 50%
  *               probability, value 2 a 17%, value 3 the 9%, etc.
  */
@@ -48,54 +49,182 @@ void potential_key_generator(int *keys, int n_keys, int max)
 {
   int i;
 
-  for(i = 0; i < n_keys; i++) 
+  for (i = 0; i < n_keys; i++)
   {
-    keys[i] = .5+max/(1 + max*((double)rand()/(RAND_MAX)));
+    keys[i] = .5 + max / (1 + max * ((double)rand() / (RAND_MAX)));
   }
 
   return;
 }
 
-PDICT init_dictionary (int size, char order)
+PDICT init_dictionary(int size, char order)
 {
-	/* your code */
+  /* your code */
 }
 
 void free_dictionary(PDICT pdict)
 {
-	/* your code */
+  /* your code */
 }
 
 int insert_dictionary(PDICT pdict, int key)
 {
-	/* your code */
+  /* your code */
 }
 
-int massive_insertion_dictionary (PDICT pdict,int *keys, int n_keys)
+int massive_insertion_dictionary(PDICT pdict, int *keys, int n_keys)
 {
-	/* your code */
+  /* your code */
 }
 
+/***************************************************/
+/* Function: search_dictionary Date: 22-11-2023    */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que buscara una clave en el diccionario  */
+/* definido por pdict usando la rutina indicada    */
+/* por method                                      */
+/*                                                 */
+/* Input:                                          */
+/* PDICT pdict: estructura diccionario             */
+/* int key: elemento a buscar                      */
+/* int *ppos: puntero a la posición del diccionario*/
+/* pfunc_search method: funcion con algoritmo de   */
+/* ordenacion                                      */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion or ERR en caso de error  */
+/***************************************************/
 int search_dictionary(PDICT pdict, int key, int *ppos, pfunc_search method)
 {
-	/* your code */
+  return method(pdict->table, 0, pdict->n_data, key, ppos);
 }
-
 
 /* Search functions of the Dictionary ADT */
-int bin_search(int *table,int F,int L,int key, int *ppos)
+
+/***************************************************/
+/* Function: bin_search Date: 22-11-2023           */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que buscara una clave en una tabla       */
+/* usando el algoritmo de busqueda binaria         */
+/*                                                 */
+/* Input:                                          */
+/* int *table: estructura diccionario              */
+/* int F: primer elemento de la tabla              */
+/* int L: ultimo elemento de la tabla              */
+/* int key: elemento a buscar                      */
+/* int *ppos: puntero a la posición del diccionario*/
+/* pfunc_search method: funcion con algoritmo de   */
+/* ordenacion                                      */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion or ERR en caso de error  */
+/***************************************************/
+int bin_search(int *table, int F, int L, int key, int *ppos)
 {
-	/* your code */
+  int mid;
+
+  if (F <= L)
+  {
+    mid = F + (L - F) / 2;
+
+    if (table[mid] == key)
+    {
+      *ppos = mid;
+      return 1;
+    }
+    else if (table[mid] < key)
+    {
+      return bin_search(table, mid + 1, L, key, ppos);
+    }
+    else
+    {
+      return bin_search(table, F, mid - 1, key, ppos);
+    }
+  }
+
+  *ppos = -1;
+  return 0;
 }
 
-int lin_search(int *table,int F,int L,int key, int *ppos)
+/***************************************************/
+/* Function: lin_search Date: 22-11-2023           */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que buscara una clave en una tabla       */
+/* usando el algoritmo de busqueda lineal          */
+/*                                                 */
+/* Input:                                          */
+/* int *table: estructura diccionario              */
+/* int F: primer elemento de la tabla              */
+/* int L: ultimo elemento de la tabla              */
+/* int key: elemento a buscar                      */
+/* int *ppos: puntero a la posición del diccionario*/
+/* pfunc_search method: funcion con algoritmo de   */
+/* ordenacion                                      */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion or ERR en caso de error  */
+/***************************************************/
+int lin_search(int *table, int F, int L, int key, int *ppos)
 {
-	/* your code */
+  int i, ob = 0;
+
+  for (i = F; i < L; i++)
+  {
+    if (table[key] == key)
+    {
+      (*ppos) = i;
+      break;
+    }
+  }
+
+  return ob;
 }
 
-int lin_auto_search(int *table,int F,int L,int key, int *ppos)
+/***************************************************/
+/* Function: lin_auto_search Date: 22-11-2023      */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que buscara una clave en una tabla       */
+/* usando el algoritmo de busqueda lineal          */
+/*                                                 */
+/* Input:                                          */
+/* int *table: estructura diccionario              */
+/* int F: primer elemento de la tabla              */
+/* int L: ultimo elemento de la tabla              */
+/* int key: elemento a buscar                      */
+/* int *ppos: puntero a la posición del diccionario*/
+/* pfunc_search method: funcion con algoritmo de   */
+/* ordenacion                                      */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion or ERR en caso de error  */
+/***************************************************/
+int lin_auto_search(int *table, int F, int L, int key, int *ppos)
 {
-	/* your code */
+  if (F <= L)
+  {
+    if (table[F] == key)
+    {
+      *ppos = F;
+      return 1;
+    }
+    else
+    {
+      return lin_auto_search(table, F + 1, L, key, ppos);
+    }
+  }
+
+  *ppos = -1;
+  return 0;
 }
-
-
