@@ -30,8 +30,8 @@ int main(int argc, char** argv)
     return 0;
   }
   printf("Practice number 1, section 4\n");
-  printf("Done by: your names\n");
-  printf("Group: Your group\n");
+  printf("Done by: Ignacio Serena y Marcos Muñoz\n");
+  printf("Group: 126\n");
 
   /* check command line */
   for(i = 1; i < argc; i++) {
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     exit(-1);
   }
 
-  ret =quicksort(perm, 0, tamano-1);
+  ret = quicksort(perm, 0, tamano-1);
 
   if (ret == ERR) {
     printf("Error: Error in SelectSort\n");

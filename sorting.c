@@ -15,62 +15,30 @@
 #include <stdlib.h>
 #include <assert.h>
 
+
+
+
 /***************************************************/
-/* Function: SelectSort    Date:                   */
-/* Your comment                                    */
+/* Function: merge Date: 8-11-2023                 */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que combina los elementos de la tabla y  */
+/* ordena los elementos de una tabla de menor a    */
+/* mayor                                           */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* iu: última posición hasta la que se ordena el   */
+/* array                                           */
+/* imedio: índice del punto medio de la tabla      */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion or ERR en caso de error  */
 /***************************************************/
-int SelectSort(int *array, int ip, int iu)
-{
-  int ob = 0;
-
-  /*printf("%d %d\n", ip, iu);
-  assert(ip < iu);*/
-  /*Busca al mínimo elemento del array, lo cambia de posición
-  con el primer elemento y reduce el tamaño del array*/
-  while (ip < iu)
-  {
-    int m = min(array, ip, iu);
-    swap(&array[ip], &array[m]);
-    ip++;
-    ob += iu - ip;
-  }
-
-  return ob;
-}
-
-int SelectSortInv(int *array, int ip, int iu)
-{
-  int ob = 0;
-
-  /*Busca el elemento mínimo elemento del array, lo cambia de posición
-  con el últmimo elemento y reduce el tamaño del array*/
-  while (iu > ip)
-  {
-    int m = min(array, ip, iu);
-    swap(&array[iu], &array[m]);
-    iu--;
-    ob += iu - ip;
-  }
-
-  return ob;
-}
-
-int min(int *array, int ip, int iu)
-{
-  /*Iguala privisionalmente el mínimo a la primera posición del array*/
-  int min = ip, i;
-
-  /*Compara todos los elementos del array con el mínimo y asigna un nuevo
-  mínimo en caso de haberlo*/
-  for (i = ip + 1; i <= iu; i++)
-  {
-    if (array[min] > array[i])
-      min = i;
-  }
-
-  return min;
-}
-
 int merge(int *tabla, int ip, int iu, int imedio)
 {
   int first = ip, mid = imedio + 1, index = 0, i, ob = 0, *taux;
@@ -85,13 +53,13 @@ int merge(int *tabla, int ip, int iu, int imedio)
     {
       taux[index] = tabla[first];
       first++;
-      ob++;
     }
     else
     {
       taux[index] = tabla[mid];
       mid++;
     }
+    ob++;
     index++;
   }
 
@@ -124,6 +92,25 @@ int merge(int *tabla, int ip, int iu, int imedio)
   return ob;
 }
 
+/***************************************************/
+/* Function: mergeSort Date: 8-11-2023             */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que ordena de menor a mayor una seccion  */
+/* del array delimitada por ip e iu                */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* iu: última posición hasta la que se ordena el   */
+/* array                                           */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion o ERR caso de error      */
+/***************************************************/
 int mergesort(int *tabla, int ip, int iu)
 {
   int mid, ob = 0;
@@ -141,6 +128,26 @@ int mergesort(int *tabla, int ip, int iu)
   return ob;
 }
 
+/*/***************************************************/
+/* Function: median Date: 15-11-2023               */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/* Rutina que devuelve el valor de ip en el        */
+/* argumento pos                                   */
+/*                                                 */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* iu: última posición hasta la que se ordena el   */
+/* array                                           */
+/* pos: posición a la que introducir el valor      */
+/* correspondiente                                 */
+/* Output: 0                                       */
+/*                                                 */
+/*                                                 */
+/***************************************************/
 int median(int *tabla, int ip, int iu, int *pos)
 {
   *pos = ip;
@@ -148,6 +155,26 @@ int median(int *tabla, int ip, int iu, int *pos)
   return 0;
 }
 
+/***************************************************/
+/* Function: median_avg Date: 15-11-2023           */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que asigna a pos la posición media entre */
+/* ip e iu                                         */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* iu: última posición hasta la que se ordena el   */
+/* array                                           */
+/* pos: posición a la que introducir el valor      */
+/* correspondiente                                 */
+/* Output: 0                                       */
+/*                                                 */
+/*                                                 */
+/***************************************************/
 int median_avg(int *tabla, int ip, int iu, int *pos)
 {
   *pos = (ip + iu) / 2;
@@ -155,102 +182,154 @@ int median_avg(int *tabla, int ip, int iu, int *pos)
   return 0;
 }
 
+
+
+/***************************************************/
+/* Function: median_stat Date: 16-11-2023          */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que elige el valor medio entre 3         */
+/* posiciones                                      */
+/* de memoria y delvuelve la posicion de valor     */
+/* intermedio                                      */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* iu: última posición hasta la que se ordena el   */
+/* array                                           */
+/* pos: posición a la que introducir el valor      */
+/* correspondiente                                 */
+/* Output: 3                                       */
+/*                                                 */
+/*                                                 */
+/***************************************************/
 int median_stat(int *tabla, int ip, int iu, int *pos)
 {
   int medio = (ip + iu) / 2;
 
-  if (((tabla[ip] <= tabla[medio]) && (tabla[medio] <= tabla[iu])) ||
-      ((tabla[iu] <= tabla[medio]) && (tabla[medio] <= tabla[ip])))
-    *pos = medio;
+  if (tabla[ip] < tabla[medio])
+  {
+    if (tabla[ip] > tabla[iu]){
+      (*pos) = ip;
+    }
 
-  else if (((tabla[medio] <= tabla[ip]) && (tabla[ip] <= tabla[iu])) ||
-           ((tabla[iu] <= tabla[ip]) && (tabla[ip] <= tabla[medio])))
-    *pos = ip;
+    else if (tabla[iu] > tabla[medio]){
+      (*pos) = iu;
+    }
+    else{
+      (*pos) = medio;
+    }
+    return 3;
+  }
 
-  else
-    *pos = iu;
+  else{
+
+    if(tabla[ip] < tabla[iu])
+      (*pos) = ip;
+
+    else if (tabla[medio] < tabla[iu])
+      (*pos) = iu;
+
+    else 
+      (*pos) = medio;
+
+    return 3;
+  }
 
   return 3;
 }
-/*
-int median_stat(int *tabla, int ip, int iu, int *pos)
-{
-  int medio = (ip + iu) / 2;
 
-  if ((tabla[ip] <= tabla[medio]) && (tabla[medio] <= tabla[iu]))
-  {
-    if ((tabla[iu] <= tabla[medio]) && (tabla[medio] <= tabla[ip]))
-      *pos = medio;
-  }
 
-  else if ((tabla[medio] <= tabla[ip]) && (tabla[ip] <= tabla[iu]))
-  {
-    if ((tabla[iu] <= tabla[ip]) && (tabla[ip] <= tabla[medio]))
-      *pos = ip;
-  }
-
-  else
-    *pos = iu;
-
-  return 3;
-}
-*/
+/***************************************************/
+/* Function: partition  Date: 15-11-2023           */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que parte y ordena la tabla de menor a   */
+/* mayor del array delimitada por ip e iu          */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* int ip: primera posición a partir de la cual se */
+/* ordena el array                                 */
+/* int iu: última posición hasta la que se ordena  */
+/* el array                                        */
+/* int* pos: posición del pivote                   */
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion o ERR caso de error      */
+/***************************************************/
 int partition(int *tabla, int ip, int iu, int *pos)
 {
   int k, i = 0, ob = 0;
 
-  ob = median(tabla, ip, iu, pos);
-
+  ob += median_stat(tabla, ip, iu, pos);
   k = tabla[*pos];
-  swap(&tabla[ip], &tabla[*pos]);
-  *pos = ip;
+  swap(&tabla[ip], &tabla[(*pos)]);
+  (*pos) = ip;
 
   for (i = ip + 1; i <= iu; i++)
   {
+    ob++;
     if (tabla[i] < k)
     {
       (*pos)++;
-      swap(&tabla[i], &tabla[*pos]);
+      swap(&tabla[i], &tabla[(*pos)]);
     }
   }
 
-  swap(&tabla[ip], &tabla[*pos]);
-  ob += i;
+  swap(&tabla[ip], &tabla[(*pos)]);
 
   return ob;
 }
 
+
+/***************************************************/
+/* Function: quickSort Date: 15-11-2023            */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que ordena de menor a mayor una seccion  */
+/* del array delimitada por ip e iu                */
+/*                                                 */
+/* Input:                                          */
+/* int* tabla: tabla que queremos ordenar          */
+/* ip: primera posición a partir de la cual se     */
+/* ordena el array                                 */
+/* int iu: última posición hasta la que se ordena  */
+/* el array                                        */ 
+/*                                                 */
+/* Output:                                         */
+/* int: número de operaciones básicas que se       */
+/* ejecutan en la funcion o ERR caso de error      */
+/***************************************************/
 int quicksort(int *tabla, int ip, int iu)
 {
-  int *pos = NULL, ob = 0;
+  int pos = 0, ob = 0;
 
-  pos = (int *)malloc(sizeof(int));
-  if (!pos)
-  {
-    fprintf(stderr, "ERROR DE RESERVA DE MEMORIA\n");
-    return -1;
-  }
 
   if (ip > iu)
   {
-    free(pos);
     return ERR;
   }
-  else if (ip == iu)
+
+  if (ip == iu)
   {
-    free(pos);
     return 0;
   }
-  else
-  {
-    ob += partition(tabla, ip, iu, pos);
-    if (ip < *pos - 1)
-      ob += quicksort(tabla, ip, *pos);
-    else if (*pos + 1 < iu)
-      ob += quicksort(tabla, *pos + 1, iu);
+   
+  ob += partition(tabla, ip, iu, &pos);
+  
+  if (ip < pos - 1){
+    ob += quicksort(tabla, ip, pos - 1);
   }
 
-  free(pos);
+  if (pos + 1 < iu){
+    ob += quicksort(tabla, pos + 1, iu);
+  }
 
   return ob;
 }
