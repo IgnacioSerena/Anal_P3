@@ -5,7 +5,7 @@
 
 CC = gcc -ansi -pedantic
 CFLAGS = -Wall
-EXE = exercise1 exercise2
+EXE = exercise1 
 
 all : $(EXE)
 
@@ -13,12 +13,12 @@ all : $(EXE)
 clean :
 	rm -f *.o core $(EXE)
 
-$(EXE) : % : %.o sorting.o search.o times.o permutations.o
+$(EXE) : % : %.o search.o permutations.o sorting.o times.o
 	@echo "#---------------------------"
 	@echo "# Generating $@ "
 	@echo "# Depepends on $^"
 	@echo "# Has changed $<"
-	$(CC) $(CFLAGS) -o $@ $@.o sorting.o search.o times.o permutations.o
+	$(CC) $(CFLAGS) -o $@ $@.o search.o sorting.o times.o permutations.o
 
 permutations.o : permutations.c permutations.h
 	@echo "#---------------------------"
@@ -50,7 +50,7 @@ times.o : times.c times.h
 
 exercise1_test:
 	@echo Running exercise1
-	@./exercise1 -size 10 -key 5
+	@valgrind --leak-check=full --track-origins=yes ./exercise1 -size 20 -key 7
 
 exercise2_test:
 	@echo Running exercise2
