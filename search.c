@@ -10,8 +10,9 @@
  */
 
 #include "search.h"
-
+#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <assert.h>
 
@@ -68,7 +69,7 @@ PDICT init_dictionary(int size, char order)
   pdict->n_data = 0;
   pdict->order = order;
 
-  pdict->table = (int *)malloc((size + 1) * sizeof(int));
+  pdict->table = (int *)malloc(size * sizeof(int));
   if (pdict->table == NULL)
   {
     free(pdict);
@@ -90,26 +91,30 @@ int insert_dictionary(PDICT pdict, int key)
 
   if (pdict->order == SORTED)
   {
+    j = pdict->n_data;
 
-    j = pdict->n_data - 1;
-    pdict->table[j + 1] = key;
-
-    while (j > 0 && pdict->table[j] > key)
+    while (j >= 0 && pdict->table[j] > key)
     {
       pdict->table[j + 1] = pdict->table[j];
-      --j;
+      j--;
     }
 
     pdict->table[j + 1] = key;
   }
   else
   {
-    ++pdict->n_data;
-    pdict->table[pdict->n_data] = key;
+    if (pdict->n_data < pdict->size)  
+    {
+      pdict->table[pdict->n_data] = key;
+      ++pdict->n_data;
+    }
+    else
+      return ERR; 
   }
 
   return OK;
 }
+
 
 int massive_insertion_dictionary(PDICT pdict, int *keys, int n_keys)
 {
@@ -146,7 +151,7 @@ int massive_insertion_dictionary(PDICT pdict, int *keys, int n_keys)
 /***************************************************/
 int search_dictionary(PDICT pdict, int key, int *ppos, pfunc_search method)
 {
-  return method(pdict->table, 0, pdict->size, key, ppos);
+  return method(pdict->table, 0, pdict->n_data - 1, key, ppos);
 }
 
 /* Search functions of the Dictionary ADT */
@@ -174,7 +179,7 @@ int search_dictionary(PDICT pdict, int key, int *ppos, pfunc_search method)
 /***************************************************/
 int bin_search(int *table, int F, int L, int key, int *ppos)
 {
-  int mid;
+  int mid, ob = 0, flag = 0;
 
   if (F <= L)
   {
@@ -182,21 +187,26 @@ int bin_search(int *table, int F, int L, int key, int *ppos)
 
     if (table[mid] == key)
     {
+      flag = 1;
       *ppos = mid;
-      return 1;
+      return ob++;
     }
     else if (table[mid] < key)
     {
+      ob++;
       return bin_search(table, mid + 1, L, key, ppos);
     }
     else
     {
-      return bin_search(table, F, mid - 1, key, ppos);
+      ob++;
+      return bin_search(table, F, mid - 1, key, ppos); 
     }
   }
 
-  *ppos = -1;
-  return 0;
+  if(flag == 0)
+    *ppos = NOT_FOUND;
+
+  return ob;
 }
 
 /***************************************************/
@@ -224,14 +234,16 @@ int lin_search(int *table, int F, int L, int key, int *ppos)
 {
   int i, ob = 0;
 
-  for (i = F; i < L; i++, ob++)
+  for (i = F; i <= L; i++, ob++)
   {
     if (table[i] == key)
     {
       *ppos = i;
-      break;
+      return ob;
     }
   }
+
+  *ppos = NOT_FOUND;
 
   return ob;
 }
