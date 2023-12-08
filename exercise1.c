@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     }
   }
 
-  pdict = init_dictionary(size,NOT_SORTED);
+  pdict = init_dictionary(size,SORTED);
 
   if (pdict == NULL) {
     /* error */
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     exit(-1);
   }
 
-  nob = search_dictionary(pdict,key,&pos,bin_search);
+  nob = search_dictionary(pdict,key,&pos,lin_search);
 
   if(nob >= 0) {
     printf("Key %d found in position %d in %d basic op.\n",key,pos,nob);

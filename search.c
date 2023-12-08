@@ -10,6 +10,7 @@
  */
 
 #include "search.h"
+#include "permutations.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,6 +60,25 @@ void potential_key_generator(int *keys, int n_keys, int max)
   return;
 }
 
+/***************************************************/
+/* Function: init_dictionary Date: 22-11-2023      */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que inicializa un diccionario, asignando */
+/* memoria para la estructura del diccionario y la */
+/* tabla de datos, e inicializando sus atributos   */
+/*                                                 */
+/* Input:                                          */
+/* int size: Tamaño de la tabla de datos del       */
+/* diccionario                                     */
+/* char order: Tipo de orden del diccionario       */
+/*                                                 */
+/* Output:                                         */
+/* PDICT: Puntero a la estructura del diccionario  */
+/* inicializado Devuelve NULL en caso de error en  */
+/* la asignación de memoria                        */
+/***************************************************/
 PDICT init_dictionary(int size, char order)
 {
   PDICT pdict = (PDICT)malloc(sizeof(DICT));
@@ -79,19 +99,54 @@ PDICT init_dictionary(int size, char order)
   return pdict;
 }
 
+/***************************************************/
+/* Function: free_dictionary Date: 22-11-2023      */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que libera la memoria asignada para un   */
+/* diccionario, incluyendo la tabla de datos y la  */
+/* estructura del diccionario                      */
+/*                                                 */
+/* Input:                                          */
+/* PDICT pdict: Estructura del diccionario a       */
+/* liberar                                         */
+/*                                                 */
+/* Output:                                         */
+/* void: La función no devuelve ningún valor Libera*/
+/* la memoria del diccionario                      */
+/***************************************************/
 void free_dictionary(PDICT pdict)
 {
   free(pdict->table);
   free(pdict);
 }
 
+/***************************************************/
+/* Function: insert_dictionary Date: 22-11-2023    */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que inserta una clave en un diccionario  */
+/* utilizando la estrategia de inserción específica*/
+/* determinada por el tipo de orden del diccionario*/
+/*                                                 */
+/* Input:                                          */
+/* PDICT pdict: Estructura del diccionario donde se*/
+/* insertará la clave                              */
+/* int key: Clave a ser insertada en el diccionario*/
+/*                                                 */
+/* Output:                                         */
+/* int: Devuelve OK si la inserción es exitosa, ERR*/
+/* en caso de error                                */
+/***************************************************/
 int insert_dictionary(PDICT pdict, int key)
 {
   int j;
 
   if (pdict->order == SORTED)
   {
-    j = pdict->n_data;
+    j = pdict->n_data - 1;
 
     while (j >= 0 && pdict->table[j] > key)
     {
@@ -100,13 +155,14 @@ int insert_dictionary(PDICT pdict, int key)
     }
 
     pdict->table[j + 1] = key;
+    pdict->n_data++;
   }
   else
   {
     if (pdict->n_data < pdict->size)  
     {
       pdict->table[pdict->n_data] = key;
-      ++pdict->n_data;
+      pdict->n_data++;
     }
     else
       return ERR; 
@@ -115,7 +171,29 @@ int insert_dictionary(PDICT pdict, int key)
   return OK;
 }
 
-
+/***************************************************/
+/* Function: massive_insertion_dictionary          */
+/* Date: 22-11-2023                                */
+/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
+/* Montiel                                         */
+/*                                                 */
+/* Rutina que realiza una inserción masiva de      */
+/* claves en un                                    */
+/* diccionario utilizando la función de inserción  */
+/* especificada por insert_dictionary              */
+/*                                                 */
+/* Input:                                          */
+/* PDICT pdict: Estructura del diccionario en el   */
+/* que se insertarán las claves.                   */
+/* int *keys:   Arreglo de claves que se           */
+/* insertarán                                      */
+/* int n_keys:  Número de claves en el arreglo.    */
+/*                                                 */
+/* Output:                                         */
+/* int: Devuelve OK si todas las inserciones son   */
+/* exitosas, ERR en caso de error durante la       */
+/* inserción                                       */
+/***************************************************/
 int massive_insertion_dictionary(PDICT pdict, int *keys, int n_keys)
 {
   int i;
@@ -179,7 +257,7 @@ int search_dictionary(PDICT pdict, int key, int *ppos, pfunc_search method)
 /***************************************************/
 int bin_search(int *table, int F, int L, int key, int *ppos)
 {
-  int mid, ob = 0, flag = 0;
+  int mid, ob = 1;
 
   if (F <= L)
   {
@@ -187,24 +265,16 @@ int bin_search(int *table, int F, int L, int key, int *ppos)
 
     if (table[mid] == key)
     {
-      flag = 1;
       *ppos = mid;
-      return ob++;
+      return ob;
     }
     else if (table[mid] < key)
-    {
-      ob++;
-      return bin_search(table, mid + 1, L, key, ppos);
-    }
+      return ob + bin_search(table, mid + 1, L, key, ppos);
     else
-    {
-      ob++;
-      return bin_search(table, F, mid - 1, key, ppos); 
-    }
+      return  ob + bin_search(table, F, mid - 1, key, ppos);
   }
 
-  if(flag == 0)
-    *ppos = NOT_FOUND;
+  *ppos = NOT_FOUND;
 
   return ob;
 }
@@ -232,7 +302,7 @@ int bin_search(int *table, int F, int L, int key, int *ppos)
 /***************************************************/
 int lin_search(int *table, int F, int L, int key, int *ppos)
 {
-  int i, ob = 0;
+  int i, ob = 1;
 
   for (i = F; i <= L; i++, ob++)
   {
@@ -271,19 +341,20 @@ int lin_search(int *table, int F, int L, int key, int *ppos)
 /***************************************************/
 int lin_auto_search(int *table, int F, int L, int key, int *ppos)
 {
-  if (F <= L)
+  int i, ob = 1;
+
+  for (i = F; i <= L; i++, ob++)
   {
-    if (table[F] == key)
+    if (table[i] == key)
     {
-      *ppos = F;
-      return 1;
-    }
-    else
-    {
-      return lin_auto_search(table, F + 1, L, key, ppos);
+      *ppos = i;
+      if(i > F)
+        swap(&table[i], &table[i - 1]);
+      
+      return ob;
     }
   }
 
-  *ppos = -1;
-  return 0;
+  *ppos = NOT_FOUND;
+  return ob;
 }
