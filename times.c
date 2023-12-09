@@ -3,33 +3,39 @@
  * Descripcion: Implementation of time measurement functions
  *
  * Fichero: times.c
- * Autor: Carlos Aguirre Maeso
+ * Autor: Ignacio Serena Montiel e Marcos Muñoz Merchan
  * Version: 1.0
- * Fecha: 16-09-2019
+ * Fecha: 08-11-2023
  *
  */
 
 #include "times.h"
-#include "sorting.h"
 #include "permutations.h"
 #include <assert.h>
 
 /***************************************************/
-/* Function: average_sorting_time Date: 18-10-2023 */
-/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
-/* Montiel                                         */
+/* Function: average_search_time Date: 08-11-2023  */
+/* Authors:Ignacio Serena Montiel e Marcos Muñoz   */
+/* Merchan                                         */
 /*                                                 */
-/* Rutina que mide el tiempo y la cantidad de      */
-/* operaciones básicas que se ejecutan al hacer    */
-/* una función metodo a un array permutado de      */
-/* n_perms de N elementos y lo guarda en una       */
-/* estructura ptime                                */
+/* Rutina que calcula el tiempo promedio de        */
+/* búsqueda y otras métricas asociadas al realizar */
+/* búsquedas en un diccionario utilizando un       */
+/* algoritmo de búsqueda específico. También puede */
+/* generar estadísticas sobre el número promedio de*/
+/* operaciones básicas realizadas durante la       */
+/* búsqueda.                                       */
 /*                                                 */
 /* Input:                                          */
-/* pfunc_sort metodo: función de la que vamos a    */
-/* medir el tiempo y numero de obs                 */
-/* int n_perms: número de permutaciones            */
+/* pfunc_sort metodo: puntero a la función de      */
+/* búsqueda que se utilizará                       */
+/* pfunc_key_generator generator: puntero a la     */
+/* función generadora de claves                    */
+/* int order:  Indica si el diccionario está       */
+/* ordenado (SORTED) o no (NOT_SORTED).            */
 /* int N: número de elementos en cada permutación  */
+/* int n_times: Número de veces que se realizará   */
+/* la búsqueda                                     */
 /* PTIME_AA ptime: estructura donde se guardaran   */
 /* los datos                                       */
 /*                                                 */
@@ -37,123 +43,152 @@
 /* short: OK en caso de que todo funcione          */
 /* correctamente o ERR en caso de error            */
 /***************************************************/
-short average_sorting_time(pfunc_sort metodo, int n_perms, int N, PTIME_AA ptime)
+
+short average_search_time(pfunc_search metodo, pfunc_key_generator generator, int order, int N, int n_times, PTIME_AA ptime)
 {
-    /* Generar las permutaciones*/
-    int **permutations = generate_permutations(n_perms, N), i;
-    /* Inicializar las variables de tiempo*/
-    int min_ob = INT_MAX;
+    PDICT pdict;
+    int *permutation = NULL, *keys_to_search = NULL;
+    clock_t start_time, end_time;
+    int total_ob = 0;
+    int min_ob = N + 1;
     int max_ob = 0;
-    double total_ob = 0;
-    /* Medir el tiempo de ejecución y contar las veces que se ejecuta la OB*/
-    clock_t ini, fin;
-    if (!metodo || n_perms <= 0 || N < 0 || !ptime)
+    int i, ob, pos;
+
+    /*Creamos el diccionario*/
+    pdict = init_dictionary(N, order);
+    if (!pdict)
+        return ERR;
+
+    /*Creamos la permutacion*/
+    permutation = generate_perm(N);
+    if (!permutation)
     {
+        free_dictionary(pdict);
         return ERR;
     }
-    ini = clock();
-    for (i = 0; i < n_perms; i++)
+
+    /*Insercion de elementos*/
+    if (massive_insertion_dictionary(pdict, permutation, N) == ERR)
     {
-        int ob_actual = 0;
-        ob_actual = metodo(permutations[i], 0, N - 1);
-        if (ob_actual < 0)
-        {
-            for (i = 0; i < n_perms; i++)
-            {
-                free(permutations[i]);
-            }
-            free(permutations);
-            return ERR;
-        }
-        total_ob += ob_actual;
-        if (ob_actual < min_ob)
-            min_ob = ob_actual;
-        if (ob_actual > max_ob)
-            max_ob = ob_actual;
+        free(permutation);
+        free_dictionary(pdict);
+        return ERR;
     }
-    fin = clock();
-    /*Asignamos valores a la estructura*/
+
+    /*Reserva de memoria para la tabla de busqueda*/
+    keys_to_search = (int *)malloc(sizeof(int) * (n_times * N));
+    if (!keys_to_search)
+    {
+        free(permutation);
+        free_dictionary(pdict);
+        return ERR;
+    }
+
+    /*Llenado de tabla*/
+    generator(keys_to_search, n_times * N, N);
+    if (keys_to_search[0] < 0)
+    {
+        fprintf(stderr, "Error generando claves\n");
+        free(keys_to_search);
+        free(permutation);
+        free_dictionary(pdict);
+        return ERR;
+    }
+
+    /*Medición de tiempos*/
+    start_time = clock();
+
+    for (i = 0; i < (n_times * N); i++)
+    {
+        ob = search_dictionary(pdict, keys_to_search[i], &pos, metodo);
+        total_ob += ob;
+        if (ob < min_ob)
+        {
+            min_ob = ob;
+        }
+        if (ob > max_ob)
+        {
+            max_ob = ob;
+        }
+    }
+
+    end_time = clock();
+
+    /*Rellenamos la estructura ptime.*/
     ptime->N = N;
-    ptime->n_elems = n_perms;
-    ptime->time = (double)(fin - ini) / (n_perms * CLOCKS_PER_SEC);
-    ptime->average_ob = total_ob / n_perms;
+    ptime->n_elems = n_times * N;
+    ptime->time = ((double)(end_time - start_time)) / (n_times * CLOCKS_PER_SEC);
+    ptime->average_ob = (double)total_ob / (n_times * N);
     ptime->min_ob = min_ob;
     ptime->max_ob = max_ob;
-    /* Liberar la memoria de las permutaciones*/
-    for (i = 0; i < n_perms; i++)
-    {
-        free(permutations[i]);
-    }
-    free(permutations);
+
+    /*Liberar memoria*/
+    free(keys_to_search);
+    free(permutation);
+    free_dictionary(pdict);
+
     return OK;
 }
 
 /***************************************************/
-/* Function: generate_sorting_time Date: 18-10-2023*/
-/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
-/* Montiel                                         */
+/* Function: generate_search_time Date: 08-11-2023 */
+/* Authors:Ignacio Serena Montiel e Marcos Muñoz   */
+/* Merchan                                         */
 /*                                                 */
-/* Rutina que mide el tiempo y la cantidad de      */
-/* operaciones básicas que se ejecutan al hacer    */
-/* una función metodo a un array permutado de      */
-/* n_perms de N elementos y lo guarda en una       */
-/* estructura ptime                                */
+/* Rutina que automatiza la toma de tiempos para   */
+/* realizar mediciones de rendimiento de las       */
+/* funciones de búsqueda en un diccionario.        */
 /*                                                 */
 /* Input:                                          */
-/* int incr: incremento entre cada permutación     */
-/* int num_min: número de donde empieza a hacer    */
-/* las permutaciones                               */
-/* int num_max: número de donde termina de hacer   */
-/* las permutaciones                               */
-/* char* file: fichero donde se guardaran los      */
-/* resultados                                      */
-/* int n_perms: número de permutaciones            */
+/* pfunc_sort metodo: puntero a la función de      */
+/* búsqueda que se utilizará                       */
+/* pfunc_key_generator generator: puntero a la     */
+/* función generadora de claves                    */
+/* int order:  Indica si el diccionario está       */
+/* char *file: nombre del fichero a escribir       */
+/* ordenado (SORTED) o no (NOT_SORTED).            */
+/* int num_min: tamaño mínimo del diccionario      */
+/* int num_max: tamaño máximo del diccionario      */
+/* int n_times: Número de veces que se realizará   */
+/* la búsqueda                                     */
 /*                                                 */
 /* Output:                                         */
 /* short: OK en caso de que todo funcione          */
 /* correctamente o ERR en caso de error            */
 /***************************************************/
-short generate_sorting_times(pfunc_sort method, char *file, int num_min, int num_max, int incr, int n_perms)
+
+short generate_search_times(pfunc_search metodo, pfunc_key_generator generator, int order, char *file, int num_min, int num_max, int incr, int n_times)
 {
-    int num, i, n_times;
-    PTIME_AA times;
-    if (!method || !file || num_min < 0 || incr < 0 || n_perms <= 0)
-    {
+    int i, num;
+    PTIME_AA ptime_array;
+
+    ptime_array = (PTIME_AA)malloc(n_times * sizeof(TIME_AA));
+    if (!ptime_array)
         return ERR;
-    }
-    n_times = (num_max - num_min) / incr + 1;
-    /*Reservamos memoria para un array de estructuras*/
-    times = (PTIME_AA)malloc(n_times * sizeof(TIME_AA));
-    if (times == NULL)
-    {
-        perror("Error al asignar memoria para times");
-        return ERR;
-    }
-    /*Este bucle recorre todos los valores a permutar, desde el num_min al num_max,con el incremento indicado*/
+
     for (num = num_min, i = 0; num <= num_max; num += incr, i++)
     {
-        short resultado = average_sorting_time(method, n_perms, num, &times[i]);
-        if (resultado == ERR)
+        if (average_search_time(metodo, generator, order, num, n_times, &ptime_array[i]) != OK)
         {
-            free(times);
+            free(ptime_array);
             return ERR;
         }
     }
-    /*Guardo en un fichero los datos del times*/
-    if (save_time_table(file, times, n_times) == ERR)
+
+    if (save_time_table(file, ptime_array, ((num_max - num_min) / incr) + 1) != OK)
     {
-        free(times);
+        free(ptime_array);
         return ERR;
     }
-    /* Liberar la memoria asignada para los resultados de tiempo*/
-    free(times);
+
+    free(ptime_array);
     return OK;
 }
 
 /***************************************************/
-/* Function: average_sorting_time Date: 18-10-2023 */
-/* Authors: Marcos Muñoz Merchan e Ignacio Serena  */
-/* Montiel                                         */
+/* Function: save_time_table      Date: 08-11-2023 */
+/* Authors:Ignacio Serena Montiel e Marcos Muñoz   */
+/* Merchan                                         */
 /*                                                 */
 /* Rutina que imprime en un fichero los datos de   */
 /* la estructura ptime                             */
@@ -163,26 +198,27 @@ short generate_sorting_times(pfunc_sort method, char *file, int num_min, int num
 /* resultados                                      */
 /* PTIME_AA ptime: estructura donde de estan los   */
 /* datos a imprimir                                */
-/* n_times: el número de permutaciones distintas   */
+/* N: Número de elementos en la estructura ptime   */
 /*                                                 */
 /* Output:                                         */
 /* short: OK en caso de que todo funcione          */
 /* correctamente o ERR en caso de error            */
 /***************************************************/
-short save_time_table(char *file, PTIME_AA ptime, int n_times)
+short save_time_table(char *file, PTIME_AA ptime, int N)
 {
     FILE *fp = fopen(file, "w");
     int i;
-    if (!file || !ptime || n_times < 0)
-        return ERR;
+
     if (fp == NULL)
     {
         perror("Error al abrir el archivo");
         return ERR;
     }
+
     /*Imprimimos en el fichero los datos del array times*/
-    for (i = 0; i < n_times; i++)
+    for (i = 0; i < N; i++)
         fprintf(fp, "%d %f %f %d %d\n", ptime[i].N, ptime[i].time, ptime[i].average_ob, ptime[i].max_ob, ptime[i].min_ob);
+
     fclose(fp);
     return OK;
 }
