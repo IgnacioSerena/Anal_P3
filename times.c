@@ -3,9 +3,9 @@
  * Descripcion: Implementation of time measurement functions
  *
  * Fichero: times.c
- * Autor: Carlos Aguirre Maeso
+ * Autor: Ignacio Serena Montiel e Marcos Muñoz Merchan  
  * Version: 1.0
- * Fecha: 16-09-2019
+ * Fecha: 08-11-2023
  *
  */
 
@@ -69,7 +69,9 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         free_dictionary(pdict);
         return ERR;
     }
-
+if (N==9){
+    fprintf(stderr, "0\n");
+}
     /*Insercion de elementos*/
     if (massive_insertion_dictionary(pdict, permutation, N) == ERR)
     {
@@ -78,8 +80,11 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         return ERR;
     }
 
+if (N==9){
+    fprintf(stderr, "1\n");
+}
     /*Reserva de memoria para la tabla de busqueda*/
-    keys_to_search = (int *)malloc(sizeof(int) * n_times * N);
+    keys_to_search = (int *)malloc(sizeof(int) * (n_times * N));
     if (!keys_to_search)
     {
         free(permutation);
@@ -87,13 +92,19 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         return ERR;
     }
 
+if (N==9){
+    fprintf(stderr, "2\n");
+}
     /*Llenado de tabla*/
     generator(keys_to_search, n_times * N, N);
 
     /*Medición de tiempos*/
     start_time = clock();
 
-    for (i = 0; i < n_times * N; i++)
+if (N==9){
+    fprintf(stderr, "3\n");
+}
+    for (i = 0; i < (n_times * N); i++)
     {
         ob = search_dictionary(pdict, keys_to_search[i], &pos, metodo);
         total_ob += ob;
@@ -109,6 +120,9 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
 
     end_time = clock();
 
+if (N==9){
+    fprintf(stderr, "4\n");
+}
     /*Rellenamos la estructura ptime.*/
     ptime->N = N;
     ptime->n_elems = n_times * N;
@@ -117,6 +131,9 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
     ptime->min_ob = min_ob;
     ptime->max_ob = max_ob;
 
+if (N==9){
+    fprintf(stderr, "5\n");
+}
     /*Liberar memoria*/
     free(keys_to_search);
     free(permutation);
@@ -162,9 +179,10 @@ short generate_search_times(pfunc_search metodo, pfunc_key_generator generator, 
     if (!metodo || !generator || !file || num_min < 0 || num_max < 0 || incr <= 0 || n_times <= 0)
         return ERR;
 
-    ptime_array = (PTIME_AA)malloc(sizeof(TIME_AA) * n_times);
+    ptime_array = (PTIME_AA)malloc(sizeof(TIME_AA) * ((num_max - num_min)/ incr) + 1);
     if (!ptime_array)
         return ERR;
+
 
     for (num = num_min, i = 0; num <= num_max; num += incr, i++)
     {
@@ -175,7 +193,7 @@ short generate_search_times(pfunc_search metodo, pfunc_key_generator generator, 
         }
     }
 
-    if (save_time_table(file, ptime_array, n_times) != OK)
+    if (save_time_table(file, ptime_array, ((num_max - num_min)/ incr) + 1) != OK)
     {
         free(ptime_array);
         return ERR;
