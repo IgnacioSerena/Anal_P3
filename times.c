@@ -14,7 +14,7 @@
 #include <assert.h>
 
 /***************************************************/
-/* Function: average_search_time Date: 08-11-2023 */
+/* Function: average_search_time Date: 08-11-2023  */
 /* Authors:Ignacio Serena Montiel e Marcos Muñoz   */
 /* Merchan                                         */
 /*                                                 */
