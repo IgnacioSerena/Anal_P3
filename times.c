@@ -3,7 +3,7 @@
  * Descripcion: Implementation of time measurement functions
  *
  * Fichero: times.c
- * Autor: Ignacio Serena Montiel e Marcos Muñoz Merchan
+ * Autor: Ignacio Serena Montiel e Marcos Muñoz Merchan  
  * Version: 1.0
  * Fecha: 08-11-2023
  *
@@ -54,6 +54,11 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
     int max_ob = 0;
     int i, ob, pos;
 
+    if (N <= 0 || !ptime)
+        return ERR;
+
+
+
     /*Creamos el diccionario*/
     pdict = init_dictionary(N, order);
     if (!pdict)
@@ -75,6 +80,8 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         return ERR;
     }
 
+
+
     /*Reserva de memoria para la tabla de busqueda*/
     keys_to_search = (int *)malloc(sizeof(int) * (n_times * N));
     if (!keys_to_search)
@@ -84,19 +91,14 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         return ERR;
     }
 
+
+
     /*Llenado de tabla*/
     generator(keys_to_search, n_times * N, N);
-    if (keys_to_search[0] < 0)
-    {
-        fprintf(stderr, "Error generando claves\n");
-        free(keys_to_search);
-        free(permutation);
-        free_dictionary(pdict);
-        return ERR;
-    }
 
     /*Medición de tiempos*/
     start_time = clock();
+
 
     for (i = 0; i < (n_times * N); i++)
     {
@@ -112,7 +114,10 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
         }
     }
 
+
     end_time = clock();
+
+
 
     /*Rellenamos la estructura ptime.*/
     ptime->N = N;
@@ -122,6 +127,7 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
     ptime->min_ob = min_ob;
     ptime->max_ob = max_ob;
 
+
     /*Liberar memoria*/
     free(keys_to_search);
     free(permutation);
@@ -129,6 +135,8 @@ short average_search_time(pfunc_search metodo, pfunc_key_generator generator, in
 
     return OK;
 }
+
+
 
 /***************************************************/
 /* Function: generate_search_time Date: 08-11-2023 */
@@ -162,9 +170,13 @@ short generate_search_times(pfunc_search metodo, pfunc_key_generator generator, 
     int i, num;
     PTIME_AA ptime_array;
 
-    ptime_array = (PTIME_AA)malloc(n_times * sizeof(TIME_AA));
+    if (!metodo || !generator || !file || num_min < 0 || num_max < 0 || incr <= 0 || n_times <= 0)
+        return ERR;
+
+    ptime_array = (PTIME_AA)malloc(sizeof(TIME_AA) * (((num_max - num_min)/ incr) + 1));
     if (!ptime_array)
         return ERR;
+
 
     for (num = num_min, i = 0; num <= num_max; num += incr, i++)
     {
@@ -175,7 +187,7 @@ short generate_search_times(pfunc_search metodo, pfunc_key_generator generator, 
         }
     }
 
-    if (save_time_table(file, ptime_array, ((num_max - num_min) / incr) + 1) != OK)
+    if (save_time_table(file, ptime_array, ((num_max - num_min)/ incr) + 1) != OK)
     {
         free(ptime_array);
         return ERR;
@@ -208,17 +220,18 @@ short save_time_table(char *file, PTIME_AA ptime, int N)
 {
     FILE *fp = fopen(file, "w");
     int i;
-
+    if (!file || !ptime || N < 0)
+        return ERR;
     if (fp == NULL)
     {
         perror("Error al abrir el archivo");
         return ERR;
     }
-
     /*Imprimimos en el fichero los datos del array times*/
     for (i = 0; i < N; i++)
         fprintf(fp, "%d %f %f %d %d\n", ptime[i].N, ptime[i].time, ptime[i].average_ob, ptime[i].max_ob, ptime[i].min_ob);
-
     fclose(fp);
     return OK;
 }
+
+

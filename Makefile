@@ -4,8 +4,8 @@
 #-----------------------
 
 CC = gcc -ansi -pedantic
-CFLAGS = -Wall
-EXE = exercise1 
+CFLAGS = -Wall -O3
+EXE = exercise1 exercise2
 
 all : $(EXE)
 
@@ -50,8 +50,8 @@ times.o : times.c times.h
 
 exercise1_test:
 	@echo Running exercise1
-	@valgrind --leak-check=full --track-origins=yes ./exercise1 -size 10 -key 8
+	@valgrind --leak-check=full --track-origins=yes ./exercise1 -size 20 -key 7
 
 exercise2_test:
 	@echo Running exercise2
-	@./exercise2 -num_min 1 -num_max 5 -incr 1 -n_times 1 -outputFile exercise5.log
+	./exercise2 -num_min 1000 -num_max 10000 -incr 100  -n_times 10000 -outputFile exercise5.log

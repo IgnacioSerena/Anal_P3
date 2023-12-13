@@ -54,7 +54,7 @@ void potential_key_generator(int *keys, int n_keys, int max)
 
   for (i = 0; i < n_keys; i++)
   {
-    keys[i] = .5 + max / (1 + max * ((double)rand() / (RAND_MAX)));
+   keys[i] = .5 + max / (1 + max * ((double)rand() / (RAND_MAX)));
   }
 
   return;
@@ -143,8 +143,15 @@ void free_dictionary(PDICT pdict)
 int insert_dictionary(PDICT pdict, int key)
 {
   int j;
+  
+  if (pdict->n_data == 0){
+    pdict->table[0] = key;
+    pdict->n_data++;
+    return OK;
+  }
 
-  if (pdict->order == SORTED)
+
+  else if (pdict->order == SORTED)
   {
     j = pdict->n_data - 1;
 
@@ -200,7 +207,7 @@ int massive_insertion_dictionary(PDICT pdict, int *keys, int n_keys)
 
   for (i = 0; i < n_keys; ++i)
   {
-    if (insert_dictionary(pdict, keys[i]) != 0)
+    if (insert_dictionary(pdict, keys[i]) != OK)
       return ERR;
   }
 
@@ -341,9 +348,9 @@ int lin_search(int *table, int F, int L, int key, int *ppos)
 /***************************************************/
 int lin_auto_search(int *table, int F, int L, int key, int *ppos)
 {
-  int i, ob = 1;
+  int i;
 
-  for (i = F; i <= L; i++, ob++)
+  for (i = F; i <= L; i++)
   {
     if (table[i] == key)
     {
@@ -351,10 +358,10 @@ int lin_auto_search(int *table, int F, int L, int key, int *ppos)
       if(i > F)
         swap(&table[i], &table[i - 1]);
       
-      return ob;
+      return i - F + 1;
     }
   }
 
   *ppos = NOT_FOUND;
-  return ob;
+  return i - F + 1;
 }
